@@ -1,2 +1,6 @@
 # short_generator
 Short form video generator
+
+
+### Reddit API Caller
+This Python script defines a RedditAPI class that simplifies interactions with the Reddit API. It is designed to authenticate, fetch stories, and manage rate limits for accessing Reddit's vast repository of user-generated content. The class features methods for obtaining a new access token using Reddit's OAuth system, making authenticated requests to various endpoints, and saving the fetched stories into a CSV file for easy data analysis or storage. To handle the Reddit API's rate limits gracefully, it includes functionality to track the number of requests made and pauses automatically when approaching the limit. Additionally, it provides methods to load and update request counts from a file, ensuring that the application does not exceed the allowed number of requests. This script is a valuable tool for developers looking to integrate Reddit data into their projects, offering a structured approach to navigate the complexities of Reddit's API and efficiently retrieve and store desired information.
