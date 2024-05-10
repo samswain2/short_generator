@@ -32,6 +32,22 @@ MILVUS_PORT = '19530'
 # Specify your cache directory path
 cache_dir = "/mnt/f/HuggingFace/huggingface_cache"
 
+collection_name = "reddit_stories"
+dim = 384  # Dimension of embeddings
+
+# Filepath for the Reddit stories CSV
+file_path = "data/reddit/reddit_stories.csv"
+
+subreddits = [
+    "LetsNotMeet",
+    "UnresolvedMysteries",
+    "Relationships",
+    "AmItheAsshole",
+    "Relationship_Advice",
+    "OnlineDating",
+    "Paranormal"
+]
+
 # Function to start Milvus
 def start_milvus(start_script="./vector_database/standalone_embed.sh start"):
     # Start Milvus
@@ -54,20 +70,7 @@ def connect_to_milvus(host='localhost', port='19530'):
 # Connect to Milvus
 connect_to_milvus(host=MILVUS_HOST, port=MILVUS_PORT)
 
-subreddits = [
-    "LetsNotMeet",
-    "UnresolvedMysteries",
-    "Relationships",
-    "AmItheAsshole",
-    "Relationship_Advice",
-    "OnlineDating",
-    "Paranormal"
-]
-
-for type in [
-    "new", 
-    # "top"
-    ]:
+for type in ["new", "top"]:
     logging.info(f"Fetching {type} stories from Reddit")
     reddit_api.fetch_stories(
         subreddits=subreddits, 
@@ -104,15 +107,12 @@ def recreate_collection(name, dim):
     return collection
 
 # Adjusted main process to delete and recreate the collection
-collection_name = "reddit_stories"
-dim = 384  # Dimension of embeddings
 collection = recreate_collection(collection_name, dim)
 
 # Load the stories from the CSV file
 def load_reddit_stories(file_path):
     return pd.read_csv(file_path)
 
-file_path = "data/reddit/reddit_stories.csv"
 df_stories = load_reddit_stories(file_path)
 
 # Initialize the Sentence Transformer model with a cache directory
@@ -128,8 +128,7 @@ embeddings = generate_embeddings(df_stories)
 
 # Function to insert data into the Milvus collection with adjustments for string conversion
 def insert_data_into_milvus(collection, df, embeddings):
-    # Convert all DataFrame columns to string to ensure compatibility, filling NaN with an empty string
-    # df = df.fillna('')  # Replace NaN with empty strings
+    # Convert all DataFrame columns to string to ensure compatibility with Milvus
     df = df.astype(str)  # Convert entire DataFrame to string type
     df.score = df.score.astype(int)  # Convert score to integer type
     

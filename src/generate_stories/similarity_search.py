@@ -1,59 +1,34 @@
 import logging
-import pexpect
+import os
 import subprocess
 import time
-import sys
 
 from pymilvus import (
     connections, Collection,
 )
 
+# Configure logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
 # Function to start Milvus
-# def start_milvus(start_script="./vector_database/standalone_embed.sh start"):
-#     # Start Milvus
-#     subprocess.run(start_script, shell=True, check=True)
-#     logging.info("Milvus started successfully.")
-
 def start_milvus(start_script="./vector_database/standalone_embed.sh start"):
-    try:
-        # Start Milvus with potential need for password
-        child = pexpect.spawn(start_script, encoding='utf-8')
-        child.logfile = sys.stdout  # Optionally log output to stdout
-
-        # Wait for potential password prompt
-        i = child.expect(['Password:', pexpect.EOF, pexpect.TIMEOUT], timeout=30)
-
-        if i == 0:  # 'Password:' found
-            password = '41288202256'  # Replace with your actual password or securely retrieve it
-            child.sendline(password)
-            child.expect(pexpect.EOF)  # Wait for the script to finish
-
-        elif i == 1:  # EOF
-            logging.info("Milvus started successfully without needing a password.")
-
-        elif i == 2:  # Timeout
-            logging.error("Timeout occurred while starting Milvus.")
-
-    except pexpect.exceptions.ExceptionPexpect as e:
-        logging.error(f"Failed to start Milvus: {e}")
+    subprocess.run(start_script, shell=True, check=True)
+    logging.info("Milvus started successfully.")
 
 # Function to check if Milvus is running and connect
-def connect_to_milvus(host='localhost', port='19530'):
+def connect_to_milvus():
     try:
-        connections.connect("default", host=host, port=port)
+        connections.connect("default", host='localhost', port='19530')
         logging.info("Connected to Milvus successfully.")
     except Exception as e:
         logging.error("Failed to connect to Milvus. Attempting to start Milvus...")
         start_milvus()
         # Wait a moment for Milvus to fully start
         time.sleep(20)
-        connections.connect("default", host=host, port=port)
+        connections.connect("default", host='localhost', port='19530')
         logging.info("Connected to Milvus after starting the service.")
 
 connect_to_milvus()
-
-# Configure logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 def search_similar_stories(query_text, top_k, collection_name, model, output_fields=["post_id", "title", "subreddit", "url"], nprobe=24):
     
@@ -84,12 +59,12 @@ def search_similar_stories(query_text, top_k, collection_name, model, output_fie
         output_fields=output_fields  # Fields to retrieve
     )
     
-    # Process and log the search results
-    logging.info("Processing search results.")
-    for hits in results:
-        for hit in hits:
-            logging.info(f"Post ID: {hit.entity.get('post_id')}, Title: {hit.entity.get('title')}, "
-                         f"Subreddit: {hit.entity.get('subreddit')}, URL: {hit.entity.get('url')}, "
-                         f"Distance: {hit.distance}")
+    # # Process and log the search results
+    # logging.info("Processing search results.")
+    # for hits in results:
+    #     for hit in hits:
+    #         logging.info(f"Post ID: {hit.entity.get('post_id')}, Title: {hit.entity.get('title')}, "
+    #                      f"Subreddit: {hit.entity.get('subreddit')}, URL: {hit.entity.get('url')}, "
+    #                      f"Distance: {hit.distance}")
             
     return results
