@@ -162,4 +162,5 @@ cython_debug/
 # Folders
 .temp/
 data/
+01_data/*
 vector_database/
